@@ -91,6 +91,15 @@ class BasicInfoFormState extends State<BasicInfoForm> {
   }
 
   @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _nickNameController.dispose();
+    _ageController.dispose();
+    return super.dispose();
+  }
+
+  @override
   void initState() {
     _loadModel();
     readScore();
