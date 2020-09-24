@@ -32,20 +32,7 @@ class Quiz extends StatelessWidget {
   Widget _renderQuiz(data, context) {
     QuizState quizState = new QuizState(data);
     quizState.data = data;
-    return new MaterialApp(
-        home: new Scaffold(
-      appBar: AppBar(
-        title: new Text('Quiz'),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-      ),
-      body: quizState,
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            quizState.goNext(context);
-          },
-          label: Text("Next")),
-    ));
+    return quizState;
   }
 
   fetchLabel(quizstate, context) {
@@ -95,10 +82,10 @@ class _QuizState extends State<QuizState> {
         score++;
       }
       selectedRadio = null;
-      if (currentCount < count - 1)
+      if (currentCount < count - 1) {
         currentCount++;
-      else {
-        print('score from quiz route----->>>' + score.toString());
+        if (currentCount == count - 1) buttonLabel = "End";
+      } else {
         Navigator.of(parentContext).pop(score);
       }
     });
@@ -141,15 +128,29 @@ class _QuizState extends State<QuizState> {
     count = qaList.length;
     final _qa = qaList[currentCount];
     currentQuestion = QnA.fromJson(_qa);
+    buttonLabel = "Next";
     return super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-        padding: EdgeInsets.all(8.0),
-        child: new Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: createQuestion()));
+    return new MaterialApp(
+        home: new Scaffold(
+      appBar: AppBar(
+        title: new Text('Quiz'),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+      ),
+      body: new Container(
+          padding: EdgeInsets.all(8.0),
+          child: new Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: createQuestion())),
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            updateQuestion(context);
+          },
+          label: Text(buttonLabel)),
+    ));
   }
 }

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 
 class BasicInformation extends StatelessWidget {
@@ -31,7 +29,6 @@ class BasicInformation extends StatelessWidget {
   }
 }
 
-// Create a Form widget.
 class BasicInfoForm extends StatefulWidget {
   final BasicInfoFormState basicInfoFormState = new BasicInfoFormState();
   @override
@@ -44,9 +41,6 @@ class BasicInfoForm extends StatefulWidget {
       basicInfoFormState._formKey.currentState.save();
       var res = await Navigator.pushNamed(context, '/quiz');
       basicInfoFormState.updateScore(res);
-      // basicInfoFormState.setState(() {
-      //   basicInfoFormState.score = res;
-      // });
     }
   }
 }
@@ -68,7 +62,6 @@ class BasicInfoFormState extends State<BasicInfoForm> {
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    print('path------>>>' + path);
     return File('$path/score.text');
   }
 
