@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'Quiz.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 
 class BasicInformation extends StatelessWidget {
   @override
@@ -36,10 +39,14 @@ class BasicInfoForm extends StatefulWidget {
     return basicInfoFormState;
   }
 
-  void submitForm(BuildContext context) {
+  Future<void> submitForm(BuildContext context) async {
     if (basicInfoFormState._formKey.currentState.validate()) {
       basicInfoFormState._formKey.currentState.save();
-      Navigator.pushNamed(context, '/quiz');
+      var res = await Navigator.pushNamed(context, '/quiz');
+      basicInfoFormState.updateScore(res);
+      // basicInfoFormState.setState(() {
+      //   basicInfoFormState.score = res;
+      // });
     }
   }
 }
@@ -52,11 +59,48 @@ class BasicInfoFormState extends State<BasicInfoForm> {
   final TextEditingController _nickNameController = new TextEditingController();
   final TextEditingController _ageController = new TextEditingController();
   final errorMessage = 'Please enter some value';
-  String questions;
+  int score;
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    print('path------>>>' + path);
+    return File('$path/score.text');
+  }
+
+  updateScore(scoreVal) {
+    setState(() {
+      score = scoreVal;
+      writeScore(score);
+    });
+  }
+
+  writeScore(score) async {
+    final file = await _localFile;
+    return file.writeAsString('$score');
+  }
+
+  readScore() async {
+    try {
+      final file = await _localFile;
+      String scoreStr = await file.readAsString();
+      setState(() {
+        score = int.parse(scoreStr);
+      });
+      return int.parse(scoreStr);
+    } catch (e) {
+      return 0;
+    }
+  }
 
   @override
   void initState() {
     _loadModel();
+    readScore();
     // _loadAssets();
     return super.initState();
   }
@@ -73,48 +117,60 @@ class BasicInfoFormState extends State<BasicInfoForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          TextFormField(
-            controller: _firstNameController,
-            key: Key('firstName'),
-            decoration: new InputDecoration(labelText: 'First (given) name'),
-            validator: validateValues,
-            onSaved: (String value) {
-              _saveModel('firstName', value);
-            },
-          ),
-          TextFormField(
-              key: Key('lastName'),
-              controller: _lastNameController,
-              decoration: new InputDecoration(labelText: 'Last (family) name'),
-              validator: validateValues,
-              onSaved: (String value) {
-                _saveModel('lastName', value);
-              }),
-          TextFormField(
-              key: Key('nickName'),
-              controller: _nickNameController,
-              decoration: new InputDecoration(labelText: 'Nickname'),
-              validator: validateValues,
-              onSaved: (String value) {
-                _saveModel('nickName', value);
-              }),
-          TextFormField(
-              key: Key('age'),
-              controller: _ageController,
-              decoration: new InputDecoration(labelText: 'Age'),
-              keyboardType: TextInputType.number,
-              validator: validateValues,
-              onSaved: (String value) {
-                _saveModel('age', int.parse(value));
-              })
-        ],
-      ),
-    );
+    return new Container(
+        padding: EdgeInsets.all(8.0),
+        child:
+            new Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+          new Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextFormField(
+                  controller: _firstNameController,
+                  key: Key('firstName'),
+                  decoration:
+                      new InputDecoration(labelText: 'First (given) name'),
+                  validator: validateValues,
+                  onSaved: (String value) {
+                    _saveModel('firstName', value);
+                  },
+                ),
+                TextFormField(
+                    key: Key('lastName'),
+                    controller: _lastNameController,
+                    decoration:
+                        new InputDecoration(labelText: 'Last (family) name'),
+                    validator: validateValues,
+                    onSaved: (String value) {
+                      _saveModel('lastName', value);
+                    }),
+                TextFormField(
+                    key: Key('nickName'),
+                    controller: _nickNameController,
+                    decoration: new InputDecoration(labelText: 'Nickname'),
+                    validator: validateValues,
+                    onSaved: (String value) {
+                      _saveModel('nickName', value);
+                    }),
+                TextFormField(
+                    key: Key('age'),
+                    controller: _ageController,
+                    decoration: new InputDecoration(labelText: 'Age'),
+                    keyboardType: TextInputType.number,
+                    validator: validateValues,
+                    onSaved: (String value) {
+                      _saveModel('age', int.parse(value));
+                    }),
+                Text("\n\nScore : " + score.toString(),
+                    style: new TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0,
+                    ))
+              ],
+            ),
+          )
+        ]));
   }
 
   String validateValues(value) {
